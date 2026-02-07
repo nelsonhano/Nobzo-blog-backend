@@ -34,28 +34,25 @@ const postSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    updatedAt: {
-        type: Date
-    },
+    updatedAt: Date,
     deletedAt: {
         type: Date,
         default: null
     }
 });
 
-// Create post slug from the name
-postSchema.pre('save', function (next) {
+// Create post slug from title
+postSchema.pre('save', function () {
     if (this.isModified('title')) {
-        this.slug = slugify(this.title, { lower: true, strict: true }) + '-' + Date.now();
+        this.slug = `${slugify(this.title, { lower: true, strict: true })}-${Date.now()}`;
     }
     this.updatedAt = Date.now();
-    next();
 });
 
-// Query middleware to exclude soft-deleted posts
-postSchema.pre(/^find/, function (next) {
-    this.find({ deletedAt: null });
-    next();
+
+// Exclude soft-deleted posts
+postSchema.pre(/^find/, function () {
+    this.where({ deletedAt: null });
 });
 
 module.exports = mongoose.model('Post', postSchema);
